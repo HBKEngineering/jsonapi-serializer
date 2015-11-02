@@ -76,6 +76,7 @@ describe('Options', function () {
     });
   });
 
+
   describe('meta', function () {
     it('should set the meta key', function (done) {
       var dataSet = {
@@ -93,6 +94,8 @@ describe('Options', function () {
       done(null, json);
     });
   });
+
+
 
   describe('included', function () {
     it('should include or not the compound documents', function (done) {
@@ -361,7 +364,125 @@ describe('Options', function () {
   });
 });
 
+describe('Errors', function () {
+
+  describe('Error', function () {
+    it('should set a single error in the errors array given a single error object', function (done) {
+     
+      var dataSet = {
+        id: '1',
+        status: '400',
+        meta: {
+          extra: 'info'
+        }
+      };
+
+      var json = new JsonApiSerializer('error', dataSet, {
+        attributes: ['id', 'status', 'meta'],
+        meta: { count: 1 }
+      });
+
+      expect(json.errors[0]).to.have.property('id').equal('1');
+      expect(json.errors[0]).to.have.property('status').equal('400');
+      expect(json.meta.count).equal(1);
+
+      done(null, json);
+    });
+  });
+
+
+
+  describe('Errors', function () {
+    it('should set multiple errors in the errors array given an errors array', function (done) {
+     
+      var dataSet = [{
+        id: '1',
+        status: '400',
+        meta: {
+          extra: 'info'
+        }
+      }, {
+        id: '2',
+        status: '500',
+        meta: {
+          extra: 'info'
+        }
+      }];
+
+      var json = new JsonApiSerializer('errors', dataSet, {
+        attributes: ['id', 'status', 'meta'],
+        meta: { count: 2 }
+      });
+
+      expect(json.errors[0]).to.have.property('id').equal('1');
+      expect(json.errors[0]).to.have.property('status').equal('400');
+      expect(json.errors[0].meta).to.have.property('extra').equal('info');
+
+      expect(json.errors[1]).to.have.property('id').equal('2');
+      expect(json.errors[1]).to.have.property('status').equal('500');
+      expect(json.errors[1].meta).to.have.property('extra').equal('info');
+
+      expect(json.meta.count).equal(2);
+
+      done(null, json);
+    });
+  });
+
+  describe('Errors with meta key', function () {
+    it('should set the meta key for errors', function (done) {
+      var dataSet = {
+        id: '1',
+        status: '400',
+        meta: {
+          extra: 'info'
+        }
+      };
+
+      var json = new JsonApiSerializer('errors', dataSet, {
+        attributes: ['id', 'status', 'meta'],
+        meta: { count: 1 }
+      });
+
+      expect(json.meta.count).equal(1);
+      done(null, json);
+    });
+  });
+
+  describe('Errors with links', function () {
+    it('should set the links', function (done) {
+
+      var dataSet = {
+        id: '54735750e16638ba1eee59cb',
+        firstName: 'Sandro',
+        lastName: 'Munda',
+      };
+
+      var json = new JsonApiSerializer('users', dataSet, {
+        topLevelLinks: {
+          self: function(data){
+            return 'http://localhost:3000/api/users/' + data.id;
+          }
+        },
+        attributes: ['firstName', 'lastName']
+      });
+
+      expect(json).to.have.property('links').eql({
+        self: 'http://localhost:3000/api/users/' + dataSet.id
+      });
+
+      done(null, json);
+    });
+  });
+
+
+
+
+
+});
+
 describe('JSON API Serializer', function () {
+
+
   describe('Flat data collection', function () {
     it('should be set into the `data.attributes`', function (done) {
       var dataSet = [{
